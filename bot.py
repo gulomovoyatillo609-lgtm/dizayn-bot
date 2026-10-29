@@ -4,82 +4,83 @@ import requests
 # Telegram bot tokeningiz
 TELEGRAM_BOT_TOKEN = "9160950331:AAGoPVgSJz-SDEY0Xx4aWsuOAtVSpDveDsc"
 
-# DeepSeek API kalitingiz
-DEEPSEEK_API_KEY = "sk-fdc985eaf835475ab02cf35b645581e6"
+# Dizaynbot uchun Gemini API kalitingiz
+GEMINI_API_KEY = "AQ.Ab8RN6J5HO1h6kELSSWfxKD1_NJpdr1rBJb08vW4XPlodPo3Mg"
 
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
 
-SYSTEM_PROMPT = """
-Sen professional grafik dizaynerning shaxsiy menejer botisan. 
-
-Asosiy vazifang:
-1. Mijozlar bilan xushmuomala, samimiy va o'zbek tilida muloqot qilish.
-2. Mijoz so'ragan xizmat turi bo'yicha quyidagi prayst-list asosida aniq ma'lumot berish.
-3. Buyurtma bermoqchi bo'lgan mijozdan: qanday dizayn kerakligi, texnik topshiriq (ma'lumotlar), qachonga tayyor bo'lishi kerakligi hamda bog'lanish uchun telefon raqami yoki Telegram profilini so'rash.
-4. Javoblarni juda uzun qilmasdan, aniq, tushunarli va chiroyli formatda yozish.
-
-XIZMATLAR VA NARXLAR RO'YXATI:
-- Reklama bannerlari: 300 000 so'mdan boshlanadi (hajmi va murakkabligiga qarab narxi o'zgarishi mumkin).
-- SMM post (1 talik): 100 000 so'm.
-- Karusel post dizayni: 180 000 so'mdan boshlanadi.
-- Video Reels uchun muqova (cover) dizayn: 50 000 so'mdan (doimiy mijozlar uchun va soni ko'p bo'lsa, narxi kelishiladi).
-- Infografika dizaynlari: 80 000 so'mdan boshlanadi.
-- Logotip (ijtimoiy tarmoqlar uchun): 500 000 so'mdan boshlanadi.
-- Kattaroq brendlar uchun logotip (barcha kerakli ishchi fayllari bilan): 100$ dan 500$ gacha (yoki loyiha holatiga qarab kelishiladi).
-- Katalog dizayni: 1 ta sahifasi (page) 80 000 so'mdan (sahifalar soni ko'p bo'lsa, narxi kelishiladi).
-- Flayer va broshyura dizayni: 150 000 so'mdan 500 000 so'mgacha.
-
-MUHIM ESLATMA:
-- Bizda "3D mahsulot vizualizatsiyasi" xizmati YO'Q. Agar mijoz 3D dizayn yoki 3D vizualizatsiya so'rasa, bu xizmat bizda mavjud emasligini xushmuomalalik bilan tushuntir va boshqa grafik dizayn xizmatlarimizni taklif qil.
-"""
+XIZMATLAR_MATNI = (
+    "💼 **Grafik dizayn xizmatlari va narxlar:**\n\n"
+    "• **SMD post va reklama bannerlari:** 50,000 so'mdan boshlab\n"
+    "• **Tashqi reklama (bilbord, panno, shtender):** 80,000 so'mdan boshlab\n"
+    "• **Mahsulot katalogi va bukletlar:** 1 sahifasi 40,000 so'mdan boshlab\n"
+    "• **Flayer, vizitka va poligrafiya:** 50,000 so'mdan boshlab\n"
+    "• **Logotip va brending:** Kelishilgan holda\n\n"
+    "📌 *Aniq narx ish hajmi va texnik topshiriqqa (TZ) qarab belgilanadi.*"
+)
 
 @bot.message_handler(commands=['start', 'help'])
 def send_welcome(message):
     welcome_text = (
-        "Assalomu alaykum! Men Grafik dizaynerning shaxsiy menejer botiman. 🎨\n\n"
-        "Sizga SMM postlar, logotip, banner, katalog yoki boshqa dizayn xizmatlari kerakmi?\n"
-        "Marhamat, o'zingizni qiziqtirgan savolni yozing yoki narxlar bilan tanishing!"
+        "Assalomu alaykum! Men grafik dizayner Oyatilloning rasmiy yordamchi menejer botiman. 🎨\n\n"
+        "Sizga quyidagi yo'nalishlarda professional dizayn xizmatlarini taklif qilamiz:\n"
+        "• Reklama bannerlari va SMD postlar\n"
+        "• Kataloglar, bukletlar va poligrafiya dizayni\n"
+        "• Tashqi reklama va brending materiallari\n\n"
+        "📋 Xizmatlar va narxlar bilan tanishish uchun /xizmatlar buyrug'ini bosing yoki savolingizni yozib qoldiring!"
     )
     bot.reply_to(message, welcome_text)
 
+@bot.message_handler(commands=['xizmatlar', 'narxlar'])
+def send_services(message):
+    bot.reply_to(message, XIZMATLAR_MATNI, parse_mode="Markdown")
+
 @bot.message_handler(func=lambda message: True)
-def chat_with_deepseek(message):
+def chat_with_gemini(message):
     user_message = message.text
-    bot.send_chat_action(message.chat.id, 'typing')
     
+    system_instruction = (
+        "Sen Oyatillo ismli professional grafik dizaynerning Telegramdagi AI menejerisan. "
+        "Mijozlarga xushmuomala, qisqa, aniq va professional tarzda o'zbek tilida javob ber. "
+        "MUHIM QOIDALAR:\n"
+        "1. Oyatillo 3D render yoki 3D modellashtirish qilmaydi (faqat 2D grafik dizayn, poligrafiya, kataloglar, SMD va tashqi reklama bannerlari).\n"
+        "2. Hech qachon kompaniya yoki brend nomini (masalan, ELITE) qo'shib gapirma, Oyatillo mustaqil dizayner sifatida ishlaydi.\n"
+        "3. Narxlar so'ralsa quyidagilarni ayt: SMD/reklama bannerlari 50,000 so'mdan, tashqi reklama 80,000 so'mdan, katalog sahifasi 40,000 so'mdan, poligrafiya 50,000 so'mdan boshlanadi.\n"
+        "4. Mijoz buyurtma bermoqchi bo'lsa, undan: 1) Qanday dizayn kerakligi, 2) O'lchamlari va matni (TZ), 3) Telefon raqami yoki Telegram lichkasini qoldirishni so'ra."
+    )
+    
+    url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={GEMINI_API_KEY}"
     headers = {
-        "Authorization": f"Bearer {DEEPSEEK_API_KEY}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "x-goog-api-key": GEMINI_API_KEY
     }
     
-    data = {
-        "model": "deepseek-chat",
-        "messages": [
-            {"role": "system", "content": SYSTEM_PROMPT},
-            {"role": "user", "content": user_message}
-        ],
-        "temperature": 0.5
+    payload = {
+        "system_instruction": {
+            "parts": [{"text": system_instruction}]
+        },
+        "contents": [
+            {
+                "role": "user",
+                "parts": [{"text": user_message}]
+            }
+        ]
     }
     
     try:
-        response = requests.post(
-            "https://api.deepseek.com/chat/completions", 
-            headers=headers, 
-            json=data, 
-            timeout=30
-        )
-        if response.status_code != 200:
-            bot.reply_to(message, f"DeepSeek xatosi ({response.status_code}): {response.text}")
-            return
-            
+        response = requests.post(url, headers=headers, json=payload, timeout=30)
         res_json = response.json()
-        bot_reply = res_json['choices'][0]['message']['content']
-        bot.reply_to(message, bot_reply)
         
+        if "candidates" in res_json:
+            bot_reply = res_json["candidates"][0]["content"]["parts"][0]["text"]
+            bot.reply_to(message, bot_reply)
+        else:
+            print("Gemini API xatosi:", res_json)
+            bot.reply_to(message, "Kechirasiz, tizimda kichik uzilish bo'ldi. Savolingizni qayta yuboring.")
     except Exception as e:
-        print(f"Xatolik yuz berdi: {e}")
-        bot.reply_to(message, f"Tizim xatoligi: {e}")
+        print("Xatolik:", e)
+        bot.reply_to(message, "Kechirasiz, javob berishda vaqtincha xatolik yuz berdi. Birozdan so'ng urinib ko'ring.")
 
 if __name__ == "__main__":
-    print("Menejer bot ishga tushdi...")
+    print("Gemini menejer bot ishga tushdi...")
     bot.infinity_polling()
