@@ -9,7 +9,6 @@ DEEPSEEK_API_KEY = "sk-fdc985eaf835475ab02cf35b645581e6"
 
 bot = telebot.TeleBot(TELEGRAM_BOT_TOKEN)
 
-# Menejer botning vazifasi va narxlar ro'yxati
 SYSTEM_PROMPT = """
 Sen professional grafik dizaynerning shaxsiy menejer botisan. 
 
@@ -46,8 +45,6 @@ def send_welcome(message):
 @bot.message_handler(func=lambda message: True)
 def chat_with_deepseek(message):
     user_message = message.text
-    
-    # Mijozga "yozmoqda..." (typing) holatini ko'rsatish
     bot.send_chat_action(message.chat.id, 'typing')
     
     headers = {
@@ -71,16 +68,17 @@ def chat_with_deepseek(message):
             json=data, 
             timeout=30
         )
-        response.raise_for_status()
+        if response.status_code != 200:
+            bot.reply_to(message, f"DeepSeek xatosi ({response.status_code}): {response.text}")
+            return
+            
         res_json = response.json()
         bot_reply = res_json['choices'][0]['message']['content']
         bot.reply_to(message, bot_reply)
         
     except Exception as e:
         print(f"Xatolik yuz berdi: {e}")
-        except Exception as e:
-        print(f"Xatolik yuz berdi: {e}")
-        bot.reply_to(message, f"Xatolik sababi: {e}")
+        bot.reply_to(message, f"Tizim xatoligi: {e}")
 
 if __name__ == "__main__":
     print("Menejer bot ishga tushdi...")
